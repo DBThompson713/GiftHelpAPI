@@ -1,29 +1,22 @@
-const queries = require("./Questionnaire");
-const gift = require("./gift");
+const Gift = require("./Gift");
 const axios = require("axios");
+const { randomDistinctNumbers } = require("./utility_service");
 
 class GiftList {
   constructor(queries) {
     this.queries = queries;
     this.list = [];
-    this.getGiftsFromQueries();
   }
 
-  //addGift -- adds gift to the list after checking that it is a gift
   addGift(gift) {
     if (gift.constructor.name === "Gift") {
       this.list.push(gift);
     }
   }
 
-  //   axios.get('https://openapi.etsy.com/v2/listings/active?api_key=0cybldlljac0tj4lsic7bnkb')
-  //   .then(response => {
-  //     console.log(response);
-  //   });
-
-  getGiftsFromQueries() {
+  async getGiftsFromQueries() {
     const url =
-      "https://openapi.etsy.com/v2/listings/active?api_key=0cybldlljac0tj4lsic7bnkb";
+      "https://openapi.etsy.com/v2/listings/active?api_key=0cybldlljac0tj4lsic7bnkb&limit=5";
 
     const promises = [];
 
@@ -31,19 +24,26 @@ class GiftList {
       promises.push(axios.get(url + `&keywords=${query}`));
     }
 
-    Promise.all(promises).then(responses => {
-      for (let response of responses) {
-        console.log(response.data);
-      }
-    });
+    try {
+      let responses = await Promise.all(promises);
 
-    // use Promise.all to get all the results
-    // put 2 random gifts into the list per query
+      for (let response of responses) {
+        const { results } = response.data;
+        const indexes = randomDistinctNumbers(results.length);
+        this.createGiftsFromResultsIndexes(indexes, results);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    return this;
   }
 
-  //create a new method called getGiftsFromQueries
-  //this method will call the etsy api for each query
-  //put 2 random gifts into the list per query
+  createGiftsFromResultsIndexes(indexes, results) {
+    for (let index of indexes) {
+      let { title, description, price } = results[index];
+      this.addGift(new Gift(title, description, price));
+    }
+  }
 }
 
 module.exports = GiftList;

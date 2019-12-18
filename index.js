@@ -3,16 +3,19 @@ const Questionnaire = require("./Questionnaire");
 const GiftList = require("./GiftList");
 
 const kidsXmasGiftsQuestionnaire = new Questionnaire();
-
 kidsXmasGiftsQuestionnaire.translateRawQuestionJSON(questionJSON);
 
 const queries = kidsXmasGiftsQuestionnaire.run();
 
-//create another class called GiftList that upon object creation takes in an array of queries
-//save those queries in a queries property
-
 const kidsGiftList = new GiftList(queries);
 
-// create a class called gift that has 3 properties: title, description, price that are required during object instantiation
+//create a class named gift that has 3 prop, title, description, price
+//that are required during object instantiation
 
-// console.log(queries);
+console.log(kidsGiftList.list);
+
+console.log(queries);
+
+kidsGiftList.getGiftsFromQueries().then(hey => {
+  console.log(hey.list);
+});
